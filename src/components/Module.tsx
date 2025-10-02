@@ -1,9 +1,8 @@
-import { useDispatch } from "react-redux";
 import { ChevronDown } from "lucide-react";
 import * as Collapsible from '@radix-ui/react-collapsible';
 
 import { Lesson } from "./Lesson";
-import { useAppSelector } from "../store";
+import { useAppDispatch, useAppSelector } from "../store";
 import { play } from "../store/slices/player";
 
 interface ModuleProps {
@@ -18,7 +17,7 @@ export function Module({ moduleIndex, title, amountOfLessons }: ModuleProps) {
   // E para isso, usamos o useDispatch para pegar a função dispatch do Redux
   // E depois, usamos essa função para disparar a ação que queremos
   // A ação é um objeto que tem uma propriedade type, que é uma string que identifica a ação
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   //Selecionamos somente os dados que nos interessam para evitar re-renderizações desnecessárias
   //Se usássemos o useAppSelector para selecionar o módulo inteiro, toda vez que qualquer coisa mudasse no módulo, ele iria re-renderizar
   //Mas como estamos selecionando apenas as lições, ele só irá re-renderizar se as lições mudarem
@@ -31,7 +30,7 @@ export function Module({ moduleIndex, title, amountOfLessons }: ModuleProps) {
   //Então, sempre que possível, devemos usar o useAppSelector para selecionar apenas o que precisamos
   //E evitar re-renderizações desnecessárias
   const lessons = useAppSelector(state => {
-    return state.player.course.modules[moduleIndex].lessons
+    return state.player.course?.modules[moduleIndex].lessons
   })
   const { currentModuleIndex, currentLessonIndex } = useAppSelector(state => {
     const { currentModuleIndex, currentLessonIndex } = state.player
@@ -56,7 +55,7 @@ export function Module({ moduleIndex, title, amountOfLessons }: ModuleProps) {
 
       <Collapsible.Content>
         <nav className="relative flex flex-col gap-4 p-6">
-          {lessons.map((lesson, lessonIndex) => {
+          {lessons && lessons.map((lesson, lessonIndex) => {
             const isCurrent = currentModuleIndex === moduleIndex &&
               currentLessonIndex === lessonIndex
             return (

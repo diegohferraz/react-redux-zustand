@@ -1,5 +1,49 @@
-import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { type PayloadAction, createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { useAppSelector } from "..";
+import { api } from "../../lib/axios";
+
+interface Course {
+  id: number
+  modules: Array<{
+    id: number
+    title: string
+    lessons: Array<{
+      id: string
+      title: string
+      duration: string
+    }>
+  }>
+}
+
+export interface PlayerState {
+  course: Course | null;
+  currentModuleIndex: number;
+  currentLessonIndex: number;
+  isLoading: boolean;
+}
+
+const initialState: PlayerState = {
+  course: null,
+  currentModuleIndex: 0,
+  currentLessonIndex: 0,
+  isLoading: false,
+}
+
+// Para fazer chamadas assíncronas, como buscar dados de uma API, podemos usar o createAsyncThunk
+// O createAsyncThunk recebe dois parâmetros: o nome da ação e uma função assíncrona que retorna uma promessa
+// O Redux Toolkit vai criar automaticamente três ações para cada thunk: pending, fulfilled e rejected
+// Pending: quando a ação é disparada
+// Fulfilled: quando a promessa é resolvida com sucesso
+// Rejected: quando a promessa é rejeitada com um erro
+// Podemos usar essas ações no extraReducers do createSlice para atualizar o estado com base no status da chamada assíncrona
+export const loadCourse = createAsyncThunk(
+  'player/load',
+  async () => {
+    const response = await api.get('/courses/1')
+
+    return response.data
+  }
+)
 
 // Aqui vamos usar o createSlice para criar um pedaço do estado global da aplicação
 // Esse pedaço do estado vai ser responsável por guardar as informações do player
@@ -15,36 +59,7 @@ import { useAppSelector } from "..";
 // actions: objeto com as ações que foram criadas no slice
 export const playerSlice = createSlice({
   name: "player",
-  initialState: {
-    course: {
-      modules: [
-        {
-          id: '1',
-          title: 'Iniciando com React',
-          lessons: [
-            { id: 'Jai8w6K_GnY', title: 'CSS Modules', duration: '13:45' },
-            { id: 'w-DW4DhDfcw', title: 'Estilização do Post', duration: '10:05' },
-            { id: 'D83-55LUdKE', title: 'Componente: Header', duration: '06:33' },
-            { id: 'W_ATsETujaY', title: 'Componente: Sidebar', duration: '09:12' },
-            { id: 'Pj8dPeameYo', title: 'CSS Global', duration: '03:23' },
-            { id: '8KBq2vhwbac', title: 'Form de comentários', duration: '11:34' },
-          ],
-        },
-        {
-          id: '2',
-          title: 'Estrutura da aplicação',
-          lessons: [
-            { id: 'gE48FQXRZ_o', title: 'Componente: Comment', duration: '13:45' },
-            { id: 'Ng_Vk4tBl0g', title: 'Responsividade', duration: '10:05' },
-            { id: 'h5JA3wfuW1k', title: 'Interações no JSX', duration: '06:33' },
-            { id: '1G0vSTqWELg', title: 'Utilizando estado', duration: '09:12' },
-          ],
-        },
-      ],
-    },
-    currentModuleIndex: 0,
-    currentLessonIndex: 0,
-  },
+  initialState,
   reducers: {
     // Aqui vai criar uma action chamada play que no redux tools vai aparecer como player/play
     play: (state, action: PayloadAction<[number, number]>) => {
@@ -53,13 +68,13 @@ export const playerSlice = createSlice({
     },
     next: (state) => { // eu posso optar por nao receber a action se eu nao for usar
       const nextLessonIndex = state.currentLessonIndex + 1;
-      const nextLesson = state.course.modules[state.currentModuleIndex].lessons[nextLessonIndex];
+      const nextLesson = state.course?.modules[state.currentModuleIndex].lessons[nextLessonIndex];
 
       if (nextLesson) {
         state.currentLessonIndex = nextLessonIndex;
       } else {
         const nextModuleIndex = state.currentModuleIndex + 1;
-        const nextModule = state.course.modules[nextModuleIndex];
+        const nextModule = state.course?.modules[nextModuleIndex];
 
         if (nextModule) {
           state.currentModuleIndex = nextModuleIndex;
@@ -67,6 +82,22 @@ export const playerSlice = createSlice({
         }
       }
     }
+  },
+  // Aqui vamos usar o extraReducers para lidar com as ações criadas pelo createAsyncThunk
+  // O extraReducers recebe uma função que recebe um builder
+  // O builder tem métodos para adicionar casos para cada ação criada pelo thunk
+  // Cada caso recebe o estado atual e a ação que foi disparada
+  // E retorna o novo estado
+  // O extraReducers é usado para lidar com ações que não foram criadas no slice
+  // Como as ações criadas pelo createAsyncThunk
+  extraReducers(builder) {
+    builder.addCase(loadCourse.pending, (state) => {
+      state.isLoading = true
+    })
+    builder.addCase(loadCourse.fulfilled, (state, action) => {
+      state.course = action.payload
+      state.isLoading = false
+    })
   },
 })
 
@@ -84,8 +115,8 @@ export const useCurrentLesson = () => {
   return useAppSelector(state => {
     const { currentModuleIndex, currentLessonIndex } = state.player
 
-    const currentModule = state.player.course.modules[currentModuleIndex]
-    const currentLesson = currentModule.lessons[currentLessonIndex]
+    const currentModule = state.player.course?.modules[currentModuleIndex]
+    const currentLesson = currentModule?.lessons[currentLessonIndex]
 
     return { currentModule, currentLesson }
   })

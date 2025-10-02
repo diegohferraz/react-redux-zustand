@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { player as reducer, play, next } from "./player";
+import { player as reducer, play, next, type PlayerState } from "./player";
 
 // Para criar os testes unitarios precisamos de um estado inicial que seja previsivel
 // Assim conseguimos testar as funcionalidades do reducer
 // O estado inicial deve ser o mais simples possivel, com poucos modulos e poucas lições
 // Assim conseguimos prever o comportamento do reducer
 // E conseguimos testar as funcionalidades do reducer
-const exampleState = {
+const exampleState: PlayerState = {
   course: {
+    id: 1,
     modules: [
       {
-        id: '1',
+        id: 1,
         title: 'Iniciando com React',
         lessons: [
           { id: 'Jai8w6K_GnY', title: 'CSS Modules', duration: '13:45' },
@@ -18,7 +19,7 @@ const exampleState = {
         ],
       },
       {
-        id: '2',
+        id: 2,
         title: 'Estrutura da aplicação',
         lessons: [
           { id: 'gE48FQXRZ_o', title: 'Componente: Comment', duration: '13:45' },
@@ -27,6 +28,7 @@ const exampleState = {
       },
     ],
   },
+  isLoading: false,
   currentModuleIndex: 0,
   currentLessonIndex: 0,
 }
@@ -39,6 +41,7 @@ describe('player slice', () => {
     const state = reducer(exampleState, play([1, 2]))
     // depois de disparar a ação play com os parametros 1 e 2
     // o estado atual deve ser atualizado para o modulo 1 e a lição 2
+
     expect(state.currentModuleIndex).toEqual(1)
     expect(state.currentLessonIndex).toEqual(2)
   })

@@ -31,7 +31,7 @@
 // export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 import { configureStore } from "@reduxjs/toolkit";
-import { useSelector, type TypedUseSelectorHook } from "react-redux";
+import { useSelector, type TypedUseSelectorHook, useDispatch } from "react-redux";
 import { player } from "./slices/player";
 
 // Para compor o estado global da aplicacao, podemos ter varios slices
@@ -51,5 +51,11 @@ export const store = configureStore({
   },
 })
 
+// Precisamos tipar o estado global da aplicacao para usar o useSelector com TypeScript
+// O useSelector e um hook que permite que a gente acesse o estado global da aplicacao
+// E selecione uma parte desse estado
 export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppDispatch: () => AppDispatch = useDispatch;
