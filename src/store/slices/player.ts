@@ -1,4 +1,5 @@
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { useAppSelector } from "..";
 
 // Aqui vamos usar o createSlice para criar um pedaço do estado global da aplicação
 // Esse pedaço do estado vai ser responsável por guardar as informações do player
@@ -71,3 +72,21 @@ const playerSlice = createSlice({
 
 export const player = playerSlice.reducer;
 export const { play, next } = playerSlice.actions;
+
+// Aqui estamos criando um hook personalizado para pegar o módulo e a lição atual
+// Esse hook vai usar o useAppSelector para acessar o estado global da aplicação
+// E retornar o módulo e a lição atual
+export const useCurrentLesson = () => {
+  //   // O appselector me retorna o estado global da aplicação
+  //   // Dentro dele eu posso manipular e acessar qualquer informação que eu tenha salvo no estado global
+  //   // Aqui eu estou pegando o módulo e a lição atual que estão sendo assistidos
+  //   // E depois, estou pegando a lição específica dentro do módulo
+  return useAppSelector(state => {
+    const { currentModuleIndex, currentLessonIndex } = state.player
+
+    const currentModule = state.player.course.modules[currentModuleIndex]
+    const currentLesson = currentModule.lessons[currentLessonIndex]
+
+    return { currentModule, currentLesson }
+  })
+}
