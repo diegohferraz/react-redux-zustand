@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 // Aqui vamos usar o createSlice para criar um pedaço do estado global da aplicação
 // Esse pedaço do estado vai ser responsável por guardar as informações do player
@@ -46,12 +46,28 @@ const playerSlice = createSlice({
   },
   reducers: {
     // Aqui vai criar uma action chamada play que no redux tools vai aparecer como player/play
-    play: (state, action) => {
+    play: (state, action: PayloadAction<[number, number]>) => {
       state.currentModuleIndex = action.payload[0]
       state.currentLessonIndex = action.payload[1]
+    },
+    next: (state) => { // eu posso optar por nao receber a action se eu nao for usar
+      const nextLessonIndex = state.currentLessonIndex + 1;
+      const nextLesson = state.course.modules[state.currentModuleIndex].lessons[nextLessonIndex];
+
+      if (nextLesson) {
+        state.currentLessonIndex = nextLessonIndex;
+      } else {
+        const nextModuleIndex = state.currentModuleIndex + 1;
+        const nextModule = state.course.modules[nextModuleIndex];
+
+        if (nextModule) {
+          state.currentModuleIndex = nextModuleIndex;
+          state.currentLessonIndex = 0;
+        }
+      }
     }
   },
 })
 
 export const player = playerSlice.reducer;
-export const { play } = playerSlice.actions;
+export const { play, next } = playerSlice.actions;
