@@ -32,9 +32,23 @@
 
 import { configureStore } from "@reduxjs/toolkit";
 import { useSelector, type TypedUseSelectorHook } from "react-redux";
+import { player } from "./slices/player";
 
+// Para compor o estado global da aplicacao, podemos ter varios slices
+// Cada slice e responsavel por uma parte do estado
+// Por exemplo, podemos ter um slice para o player, outro para o carrinho de compras, outro para o usuario, etc
+// Cada slice tem seu proprio reducer, que e uma funcao que recebe o estado atual e a acao que foi disparada
+// E retorna o novo estado
+// O configureStore recebe um objeto com a propriedade reducer, que e um objeto com os reducers de cada slice
+// O Redux vai juntar todos os reducers em um unico reducer, que vai ser usado para criar o store
+// O store e o objeto que guarda o estado global da aplicacao
+// E permite que a gente dispare acoes para modificar esse estado
+// O store tambem permite que a gente acesse o estado atual da aplicacao
+// E se inscreva para receber notificacoes quando o estado mudar
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    player
+  },
 })
 
 export type RootState = ReturnType<typeof store.getState>;

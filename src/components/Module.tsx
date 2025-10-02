@@ -2,6 +2,7 @@ import * as Collapsible from '@radix-ui/react-collapsible';
 
 import { ChevronDown } from "lucide-react";
 import { Lesson } from "./Lesson";
+import { useAppSelector } from "../store";
 
 interface ModuleProps {
   moduleIndex: number;
@@ -10,6 +11,21 @@ interface ModuleProps {
 }
 
 export function Module({ moduleIndex, title, amountOfLessons }: ModuleProps) {
+  //Selecionamos somente os dados que nos interessam para evitar re-renderizações desnecessárias
+  //Se usássemos o useAppSelector para selecionar o módulo inteiro, toda vez que qualquer coisa mudasse no módulo, ele iria re-renderizar
+  //Mas como estamos selecionando apenas as lições, ele só irá re-renderizar se as lições mudarem
+  //Isso é importante para performance, principalmente em aplicações maiores
+  //Além disso, o Redux já faz um trabalho de memoização para evitar re-renderizações desnecessárias
+  //Então, se o estado do módulo não mudar, ele não irá re-renderizar mesmo que o componente pai re-renderize
+  //Isso é uma vantagem do Redux em relação ao Context API, que não faz esse trabalho de memoização
+  //E acaba re-renderizando tudo que está dentro do Provider, mesmo que o estado não tenha mudado
+  //O que pode causar problemas de performance em aplicações maiores
+  //Então, sempre que possível, devemos usar o useAppSelector para selecionar apenas o que precisamos
+  //E evitar re-renderizações desnecessárias
+  const lessons = useAppSelector(state => {
+    return state.player.course.modules[moduleIndex].lessons
+  })
+
   return (
     <Collapsible.Root className="group">
       <Collapsible.Trigger className="flex w-full items-center gap-3 bg-zinc-800 p-4">
@@ -27,9 +43,15 @@ export function Module({ moduleIndex, title, amountOfLessons }: ModuleProps) {
 
       <Collapsible.Content>
         <nav className="relative flex flex-col gap-4 p-6">
-          <Lesson title="Fundamentos do Redux" duration="09:13" />
-          <Lesson title="Fundamentos do Redux" duration="09:13" />
-          <Lesson title="Fundamentos do Redux" duration="09:13" />
+          {lessons.map((lesson) => {
+            return (
+              <Lesson
+                key={lesson.id}
+                title={lesson.title}
+                duration={lesson.duration}
+              />
+            )
+          })}
         </nav>
       </Collapsible.Content>
     </Collapsible.Root>
