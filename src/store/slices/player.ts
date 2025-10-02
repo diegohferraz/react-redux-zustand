@@ -13,7 +13,7 @@ import { useAppSelector } from "..";
 // O createSlice retorna um objeto com 2 propriedades: reducer e actions
 // reducer: função que vai ser usada para criar o store
 // actions: objeto com as ações que foram criadas no slice
-const playerSlice = createSlice({
+export const playerSlice = createSlice({
   name: "player",
   initialState: {
     course: {
